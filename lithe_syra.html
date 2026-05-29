@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-  <title>LiTHe Syra — Orange Run Club</title>
+  <title>LiTHe Syra — Orange Run Club · Mobile Cards</title>
 
   <!-- Fonts / Icons / Map -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -458,11 +458,11 @@
 
     .visual-card {
       position: absolute;
-      right: 0px;
-      bottom: 0px;
+      right: 34px;
+      bottom: 34px;
       z-index: 3;
-      max-width: 560px;
-      padding: 15px;
+      max-width: 275px;
+      padding: 18px;
       border: 1px solid rgba(255, 255, 255, 0.16);
       border-radius: 22px;
       background: rgba(0, 0, 0, 0.72);
@@ -480,7 +480,7 @@
 
     .visual-card p {
       color: #fff;
-      font-weight: 400;
+      font-weight: 850;
     }
 
     .ticker {
@@ -870,7 +870,257 @@
         transition-duration: 0.01ms !important;
       }
     }
-  </style>
+  
+/* Mobile action cards patch */
+.hero-action-grid {
+  display: grid;
+  grid-template-rows: minmax(330px, 1.15fr) minmax(230px, 0.85fr);
+  gap: 18px;
+  padding: 0;
+  overflow: visible;
+  background: transparent;
+  border: 0;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+.action-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-xl);
+  background: var(--panel);
+  box-shadow: var(--shadow);
+  backdrop-filter: blur(18px);
+}
+
+.action-card-media,
+.news-thumb {
+  position: relative;
+  overflow: hidden;
+  background: #111;
+}
+
+.action-card-media {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.action-card-media img,
+.news-thumb img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+/* Important: first image is clean. No heavy grayscale/filter blanket over it. */
+.session-card .action-card-media img {
+  filter: none;
+  transform: scale(1.015);
+}
+
+/* The gradient only protects text readability at the bottom. It does not bury the whole image. */
+.session-card::after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0 0;
+  z-index: 2;
+  height: 58%;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,.78) 56%, rgba(0,0,0,.94) 100%);
+}
+
+.action-card-content {
+  position: relative;
+  z-index: 3;
+  display: flex;
+  min-height: 100%;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: clamp(22px, 4vw, 34px);
+}
+
+.card-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 8px 11px;
+  border: 1px solid rgba(255,255,255,.14);
+  border-radius: 999px;
+  background: rgba(0,0,0,.54);
+  color: var(--orange-2);
+  font-size: .74rem;
+  font-weight: 950;
+  letter-spacing: .13em;
+  text-transform: uppercase;
+}
+
+.action-card h2 {
+  max-width: 9ch;
+  font-family: Anton, Inter, sans-serif;
+  font-size: clamp(2.4rem, 5.4vw, 5.1rem);
+  font-weight: 400;
+  letter-spacing: -.03em;
+  line-height: .9;
+  text-transform: uppercase;
+}
+
+.action-card p {
+  max-width: 34ch;
+  color: #eee1d9;
+  font-weight: 750;
+}
+
+.news-card {
+  display: grid;
+  gap: 14px;
+  padding: 18px;
+}
+
+.news-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.news-pill {
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(255,94,46,.14);
+  color: var(--orange-2);
+  font-size: .72rem;
+  font-weight: 950;
+  letter-spacing: .08em;
+  text-transform: uppercase;
+}
+
+.news-layout {
+  display: grid;
+  grid-template-columns: .82fr 1fr;
+  gap: 14px;
+  min-height: 165px;
+}
+
+.news-thumb {
+  border: 1px solid rgba(255,255,255,.12);
+  border-radius: 22px;
+}
+
+.news-thumb img {
+  filter: grayscale(.18) contrast(1.08) brightness(.96);
+}
+
+.news-list {
+  display: grid;
+  gap: 10px;
+}
+
+.news-item {
+  display: grid;
+  gap: 4px;
+  padding: 14px;
+  border: 1px solid rgba(255,255,255,.1);
+  border-radius: 18px;
+  background: rgba(255,255,255,.045);
+  text-decoration: none;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.news-item:hover {
+  transform: translateY(-2px);
+  border-color: rgba(255,94,46,.55);
+  background: rgba(255,94,46,.09);
+}
+
+.news-item strong {
+  color: white;
+  font-size: .96rem;
+}
+
+.news-item span {
+  color: var(--muted);
+  font-size: .86rem;
+}
+
+/* Missing image fallback reused from your current design */
+.action-card-media.img-missing,
+.news-thumb.img-missing {
+  display: grid;
+  place-items: center;
+}
+
+.action-card-media.img-missing::after,
+.news-thumb.img-missing::after {
+  content: attr(data-missing);
+  position: relative;
+  z-index: 2;
+  max-width: 24ch;
+  color: rgba(255,255,255,.78);
+  font-weight: 900;
+  letter-spacing: .04em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+@media (max-width: 980px) {
+  .hero-action-grid {
+    grid-template-rows: auto;
+  }
+
+  .session-card {
+    min-height: 440px;
+  }
+}
+
+@media (max-width: 680px) {
+  .hero-action-grid {
+    gap: 12px;
+  }
+
+  .session-card {
+    min-height: 430px;
+    border-radius: 28px;
+  }
+
+  .action-card-content {
+    padding: 22px;
+  }
+
+  .action-card h2 {
+    font-size: clamp(2.7rem, 14vw, 4.3rem);
+  }
+
+  .action-card .btn-primary {
+    width: 100%;
+  }
+
+  .news-card {
+    border-radius: 28px;
+    padding: 14px;
+  }
+
+  .news-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .news-thumb {
+    min-height: 190px;
+  }
+
+  .news-header {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+
+</style>
 </head>
 
 <body>
@@ -880,7 +1130,7 @@
         <img src="./logga-uppskalad-2.png" alt="LiTHe Syra logo" class="logo-img" onerror="this.src='https://placehold.co/130x130/050505/ff5e2e?text=SYRA'" />
         <span class="brand-mark">
           <span class="brand-text">LiTHe Syra</span>
-          <span class="brand-sub">Student RunClub</span>
+          <span class="brand-sub">Student Run Club</span>
         </span>
       </a>
 
@@ -897,15 +1147,17 @@
         <div class="hero">
           <div class="hero-copy">
             <div>
-              <div class="eyebrow"> Welcome · To · Lithe Syra · student runclub </div>
+              <div class="eyebrow">NYC energy · Linköping legs · orange signal</div>
               <h1 class="sick-title">Run the <span class="orange">campus</span>. Own the pace.</h1>
               <p class="hero-lead">
-                Studentlöparsällskapet, LiTHe Syra. <br>
-                För oss som tycker om att träna löpning tillsammans.
-                No gatekeeping. Just threshold, and community. <br> <br>
+                LiTHe Syra is a student running club at Linköping University, founded in 2007 for anyone who loves to train together 
+                – regardless of pace or ambition. <br>
+                Whether you're aiming for a personal best or simply enjoy running with others, you'll feel right at home. <br> <br>
 
-                Vi har samarbeten med LiTHe Vilse och LiU Elitidrott och i vår gemensamma träningskalender hittar du alla våra träningar, 
-                där du även kan anmäla dig till dem. LiTHe Syras träningar är orangea, LiTHe Vilses är lila och LiU Elitidrott är blå.
+                We train both indoors at Campushallen and outdoors several times a week, throughout almost the entire academic year. 
+                LiTHe Syra works closely with LiTHe Vilse (orienteering) and LiU Elitidrott (campus sports). 
+                All our sessions are gathered in a shared training calendar, where you can also sign up. 
+                In that calendar, LiTHe Syra's workouts are marked in orange, LiTHe Vilse's in purple, and LiU Elitidrott's in blue.
               </p>
               <div class="hero-actions">
                 <button class="btn-primary" data-page-jump="member"><i class="fa-solid fa-bolt"></i> Join the movement</button>
@@ -914,39 +1166,64 @@
             </div>
 
             <div class="hero-stats" aria-label="Club highlights">
-              <div class="stat"><strong>30+</strong><span>runners</span></div>
+              <div class="stat"><strong>20+</strong><span>runners</span></div>
               <div class="stat"><strong>3</strong><span>weekly sessions</span></div>
-              <div class="stat"><strong>0</strong><span>gatekeeping <br> (No cap fr)</span></div>
+              <div class="stat"><strong>0</strong><span>gatekeeping <br> (no cap fr)</rb></span></div>
             </div>
           </div>
 
-          <aside class="hero-visual" aria-label="Run club imagery">
-            <!-- Replace these two filenames with your high-resolution images. Keep them in the same folder as this HTML file. -->
-            <figure class="photo-frame photo-a" data-missing="Add ./nyc-run-01.jpg">
-              <img src="./27_mast_longrun.jpeg" alt="Runners moving through the city at night" onerror="this.parentElement.classList.add('img-missing'); this.remove();" />
-            </figure>
-            <figure class="photo-frame photo-b" data-missing="Add ./nyc-run-02.jpg">
-              <img src="./outlaws_and_daydreamers.png" alt="Orange-lit running club group session" onerror="this.parentElement.classList.add('img-missing'); this.remove();" />
-            </figure>
-            <div class="visual-card">
-              <strong>The Lore</strong>
-              <p>
-                Föreningen bildades 2007 och riktar sig till alla som tycker om att träna ihop oavsett ambitionsnivå. 
-                Vi erbjuder träning både inomhus i Campushallen och utomhus flera gånger i veckan i princip hela läsåret.
-              </p>
-            </div>
+          <aside class="hero-visual hero-action-grid" aria-label="Today's session and club news">
+            <article class="action-card session-card">
+              <figure class="action-card-media" data-missing="Add ./27_mast_longrun.jpeg">
+                <img src="./27_mast_longrun.jpeg" alt="LiTHe Syra runners during a group session" onerror="this.parentElement.classList.add('img-missing'); this.remove();" />
+              </figure>
+
+              <div class="action-card-content">
+                <span class="card-kicker"><i class="fa-solid fa-stopwatch"></i> Today's session</span>
+                <h2>Ready to run today?</h2>
+                <p>Open the live LiU Elitidrott schedule, find the orange Syra session and register in one tap.</p>
+                <a class="btn-primary" href="https://www.elitidrott.on.liu.se/app/#/" target="_blank" rel="noreferrer">
+                  <i class="fa-solid fa-arrow-up-right-from-square"></i>
+                  Register to today's session
+                </a>
+              </div>
+            </article>
+
+            <article class="action-card news-card">
+              <div class="news-header">
+                <span class="card-kicker"><i class="fa-solid fa-bullhorn"></i> News</span>
+                <span class="news-pill">Syra updates</span>
+              </div>
+
+              <div class="news-layout">
+                <figure class="news-thumb" data-missing="Add ./outlaws_and_daydreamers.png">
+                  <img src="./outlaws_and_daydreamers.png" alt="LiTHe Syra orange run club visual" onerror="this.parentElement.classList.add('img-missing'); this.remove();" />
+                </figure>
+
+                <div class="news-list">
+                  <a href="https://www.elitidrott.on.liu.se/app/#/" target="_blank" rel="noreferrer" class="news-item">
+                    <strong>Weekly calendar is live</strong>
+                    <span>Orange = LiTHe Syra, purple = LiTHe Vilse, blue = LiU Elitidrott.</span>
+                  </a>
+                  <a href="#" data-page-jump="member" class="news-item">
+                    <strong>New runners welcome</strong>
+                    <span>No pace requirements. Come once, try it, feel the vibe.</span>
+                  </a>
+                </div>
+              </div>
+            </article>
           </aside>
         </div>
 
         <div class="ticker" aria-hidden="true">
-          <span>Threshold · Long run · Hill Sessions · RockGympa · Community · </span>
-          <span>Threshold · Long run · Hill Sessions · RockGympa · Community · </span>
-          <span>Threshold · Long run · Fartlek · Fidde · Community · </span>
+          <span>Threshold · Long run · RockGympa · Hill Sessions · Community · </span>
+          <span>Threshold · Long run · RockGympa · Hill Sessions · Community · </span>
+          <span>Threshold · Long run · RockGympa · Hill Sessions · Community · </span>
         </div>
 
         <section class="live-workout-window">
           <div class="live-workout-header">
-            <h3><i class="fa-solid fa-calendar-week"></i> This week's workouts — live</h3>
+            <h3><i class="fa-solid fa-calendar-week"></i> This week's workouts — click on workout to sign up</h3>
             <div class="live-badge"><span class="pulse-dot"></span> From Elitidrott</div>
           </div>
           <div class="iframe-container">
@@ -972,15 +1249,14 @@
             <p class="muted">We can hunt thresholds without turning the club into a performance cult. Run your pace. Stay with the crew.</p>
           </article>
           <article class="glass-panel">
-            <i class="fa-solid fa-route"></i>
-            <h3>Built for real sessions</h3>
-            <p class="muted">Live workout window, clear meeting point, fast registration and fewer visual distractions.</p>
+            <i class="fa-solid fa-universal-access"></i>
+            <h3>However...</h3>
+            <p class="muted">If its CULT that you are looking for you will problably enjoy our rockgympa. Think burning man with hint of Aeroobics.</p>
           </article>
           <article class="glass-panel">
-            <i class="fa-solid fa-universal-access"></i>
-            <h3>The Lore</h3>
-            <p class="muted">Föreningen bildades 2007 och riktar sig till alla som tycker om att träna ihop oavsett ambitionsnivå. 
-                Vi erbjuder träning både inomhus i Campushallen och utomhus flera gånger i veckan i princip hela läsåret.</p>
+            <i class="fa-solid fa-route"></i>
+            <h3>Scalable workouts</h3>
+            <p class="muted">Our workouts are always scaleable to your desire, feel free to shorten workouts if needed.</p>
           </article>
         </section>
       </section>
@@ -1100,8 +1376,8 @@
     </main>
 
     <footer>
-      <img src="./logga-uppskalad-2.png" alt="LiTHe Syra logo" class="logo-img" onerror="this.src='https://placehold.co/130x130/050505/ff5e2e?text=SYRA'"/>
-      Copytight (C) LiTHe Syra 2007 - 2026
+      <i class="fa-solid fa-heart-pulse" style="color: var(--orange);"></i>
+      Copyright © LiTHe Syra 2007–2026
     </footer>
   </div>
 
@@ -1160,7 +1436,7 @@
         return;
       }
 
-      const meetingPoint = [58.3990, 15.5772];
+      const meetingPoint = [58.3995, 15.5890];
 
       window.syraMap = L.map('sick-map', {
         scrollWheelZoom: false
@@ -1279,4 +1555,4 @@
     });
   </script>
 </body>
-</html>design
+</html>
