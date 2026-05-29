@@ -1,0 +1,747 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>LiTHe Syra — minimalist run collective</title>
+    <!-- Google Fonts + Font Awesome -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <!-- Leaflet CSS & JS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #ffffff;
+            color: #111111;
+            line-height: 1.5;
+            scroll-behavior: smooth;
+        }
+
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem 3rem;
+        }
+
+        .site-header {
+            border-bottom: 1px solid #eaeaea;
+            margin-bottom: 2.5rem;
+            background: #ffffff;
+        }
+
+        .navbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1.5rem;
+            padding: 1rem 0;
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .logo-img {
+            height: 44px;
+            width: auto;
+            object-fit: contain;
+        }
+
+        .brand-text {
+            font-weight: 700;
+            font-size: 1.5rem;
+            letter-spacing: -0.02em;
+            color: #111;
+        }
+
+        .nav-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.25rem;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            padding: 0.5rem 1rem;
+            border-radius: 2rem;
+            cursor: pointer;
+            font-family: inherit;
+            color: #3b3b3b;
+            transition: all 0.2s ease;
+        }
+
+        .nav-btn i {
+            margin-right: 6px;
+            font-size: 0.9rem;
+        }
+
+        .nav-btn.active {
+            background: #111111;
+            color: white;
+        }
+
+        .nav-btn:hover:not(.active) {
+            background: #f2f2f2;
+            color: #111;
+        }
+
+        .page {
+            display: none;
+            animation: fadeIn 0.25s ease;
+        }
+
+        .active-page {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(5px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            letter-spacing: -0.03em;
+            line-height: 1.2;
+            margin-bottom: 1rem;
+            color: #111;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            letter-spacing: -0.02em;
+            margin-bottom: 1rem;
+            color: #111;
+        }
+
+        h3 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        /* UPPDATERAD RUTA MED BAKGRUNDSBILD */
+        .hero-card {
+            background: rgba(0, 0, 0, 0.55); /* fallback/filter */
+            border-radius: 1.25rem;
+            padding: 2.5rem;
+            margin: 0 0 1.5rem 0;
+            position: relative;
+            overflow: hidden;
+            color: white;
+            border: none;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .hero-card::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('./27_mast_longrun.jpeg'); /* ← byt ut mot din svartvita bild. Bilden ska ligga i samma mapp som denna html-fil */
+            background-size: cover;
+            background-position: center 40%;
+           /* filter: grayscale(100%) brightness(0.45) contrast(1.1);*/
+            z-index: 0;
+        }
+
+        /* variant med ljusare overlay om bilden är mörk nog */
+        .hero-card {
+            background: rgba(0, 0, 0, 0.4);
+            position: relative;
+            z-index: 1;
+        }
+
+        .hero-card > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        .hero-card h1, 
+        .hero-card p,
+        .hero-card div {
+            color: #ffffff;
+            text-shadow: 0 1px 3px rgba(0,0,0,0.5);
+        }
+
+        .hero-card .inline-badge {
+            background: rgba(255,255,255,0.2);
+            backdrop-filter: blur(4px);
+            display: inline-block;
+            padding: 0.2rem 1rem;
+            border-radius: 2rem;
+            font-size: 0.8rem;
+        }
+
+        /* vanliga kort */
+        .section-card {
+            background: #ffffff;
+            border: 1px solid #e6e6e6;
+            border-radius: 1.25rem;
+            padding: 2rem;
+            margin: 1.5rem 0;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+        }
+
+        .subtle-card {
+            background: #fafafa;
+            border-radius: 1.25rem;
+            padding: 1.8rem;
+            border: 1px solid #ececec;
+        }
+
+        .form-group {
+            margin-bottom: 1.25rem;
+        }
+
+        label {
+            font-weight: 500;
+            display: block;
+            margin-bottom: 0.4rem;
+            color: #2c2c2c;
+            font-size: 0.9rem;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            background: #ffffff;
+            border: 1px solid #d0d0d0;
+            border-radius: 0.75rem;
+            font-size: 0.95rem;
+            color: #111;
+            font-family: inherit;
+            transition: 0.15s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #888;
+            box-shadow: 0 0 0 2px rgba(0,0,0,0.05);
+        }
+
+        .btn-primary {
+            background: #111111;
+            color: white;
+            border: none;
+            padding: 0.75rem 1.8rem;
+            font-weight: 500;
+            border-radius: 2rem;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: 0.2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary:hover {
+            background: #2c2c2c;
+            transform: scale(0.98);
+        }
+
+        .btn-outline {
+            background: transparent;
+            border: 1px solid #b0b0b0;
+            padding: 0.7rem 1.5rem;
+            border-radius: 2rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: 0.2s;
+            color: #222;
+        }
+
+        .live-workout-window {
+            background: #ffffff;
+            border-radius: 1.25rem;
+            margin: 1.5rem 0;
+            border: 1px solid #eaeaea;
+            overflow: hidden;
+        }
+
+        .live-workout-header {
+            background: #f8f8f8;
+            padding: 1rem 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 10px;
+            border-bottom: 1px solid #eaeaea;
+        }
+
+        .live-workout-header h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin: 0;
+            color: #111;
+        }
+
+        .live-badge {
+            background: #ececec;
+            padding: 0.2rem 0.8rem;
+            border-radius: 2rem;
+            font-size: 0.7rem;
+            font-weight: 500;
+            color: #3a3a3a;
+        }
+
+        .iframe-container {
+            width: 100%;
+            height: 520px;
+            background: #fff;
+        }
+
+        .iframe-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .iframe-fallback {
+            background: #fefefe;
+            padding: 0.8rem;
+            text-align: center;
+            font-size: 0.8rem;
+            border-top: 1px solid #ececec;
+            color: #4b4b4b;
+        }
+
+        #sick-map {
+            height: 360px;
+            width: 100%;
+            border-radius: 1rem;
+            margin: 1rem 0;
+            z-index: 1;
+            border: 1px solid #e2e2e2;
+        }
+
+        .map-caption {
+            font-size: 0.85rem;
+            text-align: center;
+            margin-top: 0.75rem;
+            color: #5a5a5a;
+        }
+
+        .two-col-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+        }
+
+        .social-embed-placeholder {
+            background: #fafafa;
+            border-radius: 1rem;
+            padding: 2rem;
+            text-align: center;
+            border: 1px solid #ededed;
+        }
+
+        .strava-badge, .insta-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            background: #ffffff;
+            border: 1px solid #ddd;
+            border-radius: 3rem;
+            padding: 0.7rem 1.8rem;
+            margin-top: 1.2rem;
+            font-weight: 500;
+            text-decoration: none;
+            color: #111;
+            transition: 0.2s;
+        }
+
+        footer {
+            margin-top: 3rem;
+            text-align: center;
+            padding: 1.5rem 0 0.5rem;
+            border-top: 1px solid #ececec;
+            font-size: 0.8rem;
+            color: #5a5a5a;
+        }
+
+        @media (max-width: 720px) {
+            .container { padding: 1rem; }
+            .navbar { flex-direction: column; align-items: flex-start; }
+            .nav-links { justify-content: flex-start; width: 100%; overflow-x: auto; }
+            h1 { font-size: 2.2rem; }
+            .hero-card { padding: 1.5rem; }
+            .iframe-container { height: 420px; }
+            .two-col-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="site-header">
+    <div class="container" style="padding-top:0.5rem; padding-bottom:0;">
+        <div class="navbar">
+            <div class="logo-area">
+                <img src="./logga-uppskalad-2.png" alt="LiTHe Syra" class="logo-img" onerror="this.src='https://placehold.co/60x60?text=SYRA'">
+            </div>
+            <div class="nav-links">
+                <button class="nav-btn active" data-page="home"><i class="fas fa-home"></i> Home</button>
+                <button class="nav-btn" data-page="login"><i class="fas fa-key"></i> Login</button>
+                <button class="nav-btn" data-page="member"><i class="fas fa-user-plus"></i> Join</button>
+                <button class="nav-btn" data-page="workout"><i class="fas fa-calendar-alt"></i> Register</button>
+                <button class="nav-btn" data-page="strava"><i class="fab fa-strava"></i> Strava</button>
+                <button class="nav-btn" data-page="instagram"><i class="fab fa-instagram"></i> Instagram</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- HOME PAGE - hero med bakgrundsbild -->
+    <div id="home-page" class="page active-page">
+        <!-- Bakgrundsruta med din svartvita bild -->
+        <div class="hero-card">
+            <h1>no gatekeeping,<br>just threshold & community.</h1>
+            <p style="font-size: 1.2rem; max-width: 680px; margin-bottom: 1rem;">LiTHe Syra – inclusive run collective for every pace, identity and background. From walk-breaks to sub‑3 marathons.</p>
+            <div>
+                <span class="inline-badge"><i class="fas fa-flag-checkered"></i> Vallamassivet · all speeds welcome</span>
+                <span class="inline-badge" style="margin-left: 0.5rem;"><i class="fas fa-heart"></i> 50kr membership</span>
+            </div>
+        </div>
+
+        <!-- LIVE WINDOW -->
+        <div class="live-workout-window">
+            <div class="live-workout-header">
+                <h3><i class="far fa-calendar-alt"></i> 📅 This week's sessions — LIVE booking</h3>
+                <div class="live-badge"><i class="fas fa-circle" style="color:#2c7a4d; font-size:0.6rem;"></i> live from Elitidrott</div>
+            </div>
+            <div class="iframe-container">
+                <iframe src="https://www.elitidrott.on.liu.se/app/#/" title="LiTHe Syra weekly workouts" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            </div>
+            <div class="iframe-fallback">
+                <i class="fas fa-external-link-alt"></i> Direct booking window – if not visible, <a href="https://www.elitidrott.on.liu.se/app/#/" target="_blank" style="color:#111; font-weight:500;">open full schedule ↗</a>
+            </div>
+        </div>
+
+        <!-- MAP -->
+        <div class="section-card">
+            <h2><i class="fas fa-map-pin"></i> Meeting point — Vallamassivet / behind Studenthuset</h2>
+            <p style="margin-bottom: 0.75rem;">📍 Grass field next to Vallamassivet sports hall. Intervals, long runs, shared miles.</p>
+            <div id="sick-map"></div>
+            <div class="map-caption"><i class="fas fa-flag-checkered"></i> Orange flags & smiles — you'll find us. Always inclusive, always no drop.</div>
+        </div>
+
+        <!-- värdegrund -->
+        <div class="two-col-grid">
+            <div class="subtle-card">
+                <i class="fas fa-heart" style="font-size: 1.6rem; color:#111;"></i>
+                <h3 style="margin-top: 0.5rem;">radically inclusive</h3>
+                <p>All genders, bodies, paces. Safe space where everyone belongs. No judgement, just support.</p>
+            </div>
+            <div class="subtle-card">
+                <i class="fas fa-leaf" style="font-size: 1.6rem; color:#111;"></i>
+                <h3 style="margin-top: 0.5rem;">free & forever</h3>
+                <p>No fees, no hierarchy. Show up, run, high‑five. Fika and post‑run hangs always optional.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGIN -->
+    <div id="login-page" class="page">
+        <div class="section-card" style="max-width: 540px; margin-left: auto; margin-right: auto;">
+            <h2><i class="fas fa-lock-open"></i> welcome back</h2>
+            <p style="margin-bottom: 1.5rem;">No gatekeeping — any email works. Just hop in.</p>
+            <form id="login-form">
+                <div class="form-group">
+                    <label>Email / nickname</label>
+                    <input type="email" id="login-email" placeholder="your@email.com or 'runner'" required>
+                </div>
+                <div class="form-group">
+                    <label>Password (anything counts)</label>
+                    <input type="password" id="login-password" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn-primary"><i class="fas fa-arrow-right"></i> enter the pack</button>
+                <p id="login-feedback" style="margin-top: 1rem; font-size:0.85rem; color:#2e6b3e;"></p>
+            </form>
+            <div class="map-caption" style="margin-top: 1.2rem;">✨ just type anything – the vibe is unlocked</div>
+        </div>
+    </div>
+
+    <!-- BECOME MEMBER -->
+    <div id="member-page" class="page">
+        <div class="section-card">
+            <h2><i class="fas fa-user-plus"></i> become a member</h2>
+            <p>100% free, open to all students, staff and runners. Get updates, session reminders, and after‑run fika.</p>
+            <form id="member-form" style="margin-top: 1.5rem;">
+                <div class="two-col-grid">
+                    <div class="form-group">
+                        <label>Full name *</label>
+                        <input type="text" id="member-name" placeholder="Alex Syra" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" id="member-email" placeholder="hello@liu.se" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Program / affiliation (optional)</label>
+                    <input type="text" id="member-program" placeholder="e.g., Datateknik, or just run lover">
+                </div>
+                <div class="form-group">
+                    <label>🏃 Your comfort pace</label>
+                    <select id="member-pace">
+                        <option>🐢 chill & conversational (6:30+/km)</option>
+                        <option>⚡ steady tempo (5:00-6:00/km)</option>
+                        <option>🔥 threshold hunter (4:00-5:00/km)</option>
+                        <option>🚀 all of the above</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label style="display: flex; gap: 10px; align-items: center;"><input type="checkbox" id="member-inclusive" checked> I agree: inclusivity & respect are everything ✨</label>
+                </div>
+                <button type="submit" class="btn-primary"><i class="fas fa-running"></i> join the collective</button>
+                <p id="member-feedback" style="margin-top: 1rem;"></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- REGISTER WORKOUT -->
+    <div id="workout-page" class="page">
+        <div class="section-card">
+            <h2><i class="fas fa-clipboard-list"></i> register for a session</h2>
+            <p>Pick a training, we'll save you a spot. All levels invited. The live window above shows full weekly schedule.</p>
+            <div class="live-workout-window" style="margin: 1.2rem 0 1.8rem 0;">
+                <div class="live-workout-header">
+                    <h3 style="font-size:0.95rem;"><i class="fas fa-eye"></i> quick preview — weekly workouts</h3>
+                    <a href="https://www.elitidrott.on.liu.se/app/#/" target="_blank" style="color:#111; font-weight:500;">open full schedule →</a>
+                </div>
+                <div class="iframe-container" style="height: 300px;">
+                    <iframe src="https://www.elitidrott.on.liu.se/app/#/" title="weekly workouts preview"></iframe>
+                </div>
+            </div>
+            <form id="workout-reg-form">
+                <div class="two-col-grid">
+                    <div class="form-group">
+                        <label>Your name *</label>
+                        <input type="text" id="workout-name" placeholder="Emilia K." required>
+                    </div>
+                    <div class="form-group">
+                        <label>Email *</label>
+                        <input type="email" id="workout-email" placeholder="run@liu.se" required>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>🔥 choose your session</label>
+                    <select id="workout-session">
+                        <option>Monday 17:30 – Threshold Intervals @ Vallamassivet</option>
+                        <option>Wednesday 18:00 – Easy Long Run (no drop)</option>
+                        <option>Friday 16:00 – Fartlek & Fika</option>
+                        <option>Saturday 10:00 – Pace Party all speeds</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Extra vibes / pace buddy request</label>
+                    <textarea rows="2" id="workout-note" placeholder="looking for someone to run 5k around 30 min, or just good energy"></textarea>
+                </div>
+                <button type="submit" class="btn-primary"><i class="fas fa-calendar-check"></i> confirm registration</button>
+                <p id="workout-feedback" style="margin-top: 1rem;"></p>
+            </form>
+            <div class="map-caption" style="margin-top: 1rem;">📍 All sessions meet at Vallamassivet (see map). Orange flags, open arms.</div>
+        </div>
+    </div>
+
+    <!-- STRAVA -->
+    <div id="strava-page" class="page">
+        <div class="section-card">
+            <h2><i class="fab fa-strava"></i> Strava club</h2>
+            <p>Connect with the crew, follow our activities, share your runs, and become part of the LiTHe Syra family on Strava.</p>
+            <div class="social-embed-placeholder" style="margin: 1.5rem 0;">
+                <i class="fab fa-strava" style="font-size: 2.8rem; color:#FC4C02;"></i>
+                <h3 style="margin-top: 0.8rem;">LiTHe Syra on Strava</h3>
+                <p style="margin: 0.8rem 0;">Join our club to see group runs, leaderboards (friendly!), and weekly mileage.</p>
+                <a href="https://www.strava.com/clubs/lithe-syra" target="_blank" class="strava-badge">
+                    <i class="fab fa-strava"></i> Visit Strava Club ↗
+                </a>
+                <div class="map-caption" style="margin-top: 1.2rem;">🔗 Replace the link with your official club URL – members can share routes & kudos.</div>
+            </div>
+            <hr>
+            <div class="subtle-card">
+                <p><i class="fas fa-chart-line"></i> Why Strava? Segment challenges, run recaps, and a motivating feed. Everyone’s pace is celebrated.</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- INSTAGRAM -->
+    <div id="instagram-page" class="page">
+        <div class="section-card">
+            <h2><i class="fab fa-instagram"></i> Instagram · behind the orange</h2>
+            <p>Daily moments, session throwbacks, and the sweaty smiles. Follow for updates and stories.</p>
+            <div class="social-embed-placeholder" style="margin: 1.5rem 0;">
+                <i class="fab fa-instagram" style="font-size: 2.8rem; color:#d62976;"></i>
+                <h3 style="margin-top: 0.8rem;">@lithe_syra</h3>
+                <p style="margin: 0.5rem 0;">Tag us in your run fits, celebrate every mile.</p>
+                <a href="https://www.instagram.com/lithe_syra" target="_blank" class="insta-badge">
+                    <i class="fab fa-instagram"></i> Follow on Instagram
+                </a>
+                <div class="map-caption" style="margin-top: 1rem;">📸 Embed your official feed or simply direct runners to your profile. Orange vibes guaranteed.</div>
+            </div>
+            <div class="two-col-grid" style="margin-top: 1rem;">
+                <div class="subtle-card"><i class="fas fa-camera"></i> Weekly takeover stories</div>
+                <div class="subtle-card"><i class="fas fa-heart"></i> Inclusive shoutouts & PR celebrations</div>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <i class="fas fa-shoe-prints"></i> LiTHe Syra – no gatekeeping, just good miles & high fives  ·  run by students, for everyone
+    </footer>
+</div>
+
+<script>
+    // Page switching
+    const pages = {
+        home: document.getElementById('home-page'),
+        login: document.getElementById('login-page'),
+        member: document.getElementById('member-page'),
+        workout: document.getElementById('workout-page'),
+        strava: document.getElementById('strava-page'),
+        instagram: document.getElementById('instagram-page')
+    };
+    const navBtns = document.querySelectorAll('.nav-btn');
+
+    function switchPage(pageId) {
+        Object.keys(pages).forEach(key => {
+            if(pages[key]) pages[key].classList.remove('active-page');
+        });
+        if(pages[pageId]) pages[pageId].classList.add('active-page');
+        navBtns.forEach(btn => {
+            const pg = btn.getAttribute('data-page');
+            if(pg === pageId) btn.classList.add('active');
+            else btn.classList.remove('active');
+        });
+        if(pageId === 'home' && window.syraMap) {
+            setTimeout(() => { window.syraMap.invalidateSize(); }, 200);
+        } else if(pageId === 'home' && !window.mapInitialized) {
+            initMap();
+        }
+    }
+
+    navBtns.forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            const page = btn.getAttribute('data-page');
+            if(page && pages[page]) switchPage(page);
+        });
+    });
+
+    // Leaflet map
+    let mapInitialized = false;
+    let syraMap = null;
+
+    function initMap() {
+        if(mapInitialized && syraMap) {
+            syraMap.invalidateSize();
+            return;
+        }
+        const meetingPoint = [58.3990, 15.5772];
+        const mapContainer = document.getElementById('sick-map');
+        if(!mapContainer) return;
+        syraMap = L.map('sick-map').setView(meetingPoint, 16);
+        L.tileLayer('https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png', {
+            attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> & CartoDB',
+            subdomains: 'abcd',
+            maxZoom: 19
+        }).addTo(syraMap);
+        
+        const simpleIcon = L.divIcon({
+            html: '<div style="background:#111; width:28px; height:28px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid white; box-shadow:0 0 0 1px #ccc;"><span style="color:white; font-size:12px;">🏁</span></div>',
+            iconSize: [28,28],
+            className: ''
+        });
+        L.marker(meetingPoint, { icon: simpleIcon }).addTo(syraMap)
+            .bindPopup('<b>LiTHe Syra start</b><br>Behind Studenthuset, Vallamassivet')
+            .openPopup();
+        mapInitialized = true;
+    }
+
+    // Login demo
+    const loginForm = document.getElementById('login-form');
+    if(loginForm) {
+        loginForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const email = document.getElementById('login-email').value.trim();
+            document.getElementById('login-feedback').innerHTML = email ? `🎉 Welcome back, ${email}! Ready for some orange miles? No gatekeeping.` : `✨ just type anything, you're in.`;
+            loginForm.reset();
+        });
+    }
+
+    // Member form
+    const memberForm = document.getElementById('member-form');
+    if(memberForm) {
+        memberForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const name = document.getElementById('member-name').value.trim();
+            const email = document.getElementById('member-email').value.trim();
+            if(!name || !email) {
+                document.getElementById('member-feedback').innerHTML = "❌ Name and email, please – we want to know you!";
+                return;
+            }
+            const inclusive = document.getElementById('member-inclusive').checked;
+            if(!inclusive) {
+                document.getElementById('member-feedback').innerHTML = "🤝 Please confirm the inclusive agreement – respect is our core.";
+                return;
+            }
+            document.getElementById('member-feedback').innerHTML = `✅ Orange welcome, ${name}! You're now part of LiTHe Syra. Keep an eye on ${email} for session updates. 🧡`;
+            memberForm.reset();
+            document.getElementById('member-inclusive').checked = true;
+        });
+    }
+
+    // Workout reg
+    const workoutForm = document.getElementById('workout-reg-form');
+    if(workoutForm) {
+        workoutForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const wName = document.getElementById('workout-name').value.trim();
+            const wEmail = document.getElementById('workout-email').value.trim();
+            const sessionSelect = document.getElementById('workout-session');
+            const sessionText = sessionSelect.value;
+            if(!wName || !wEmail) {
+                document.getElementById('workout-feedback').innerHTML = "Enter name & email to secure your spot!";
+                return;
+            }
+            document.getElementById('workout-feedback').innerHTML = `✨ Done, ${wName}! You're signed up for: <strong>${sessionText}</strong>. A reminder will be sent to ${wEmail}. See you at Vallamassivet! 🏃‍♀️`;
+            workoutForm.reset();
+        });
+    }
+
+    window.addEventListener('load', () => {
+        if(document.getElementById('home-page').classList.contains('active-page')) {
+            initMap();
+        } else {
+            setTimeout(() => { if(document.getElementById('home-page').classList.contains('active-page') && !mapInitialized) initMap(); }, 150);
+        }
+        setTimeout(() => { if(window.syraMap && mapInitialized) window.syraMap.invalidateSize(); }, 300);
+    });
+    window.addEventListener('resize', () => {
+        if(window.syraMap && mapInitialized && document.getElementById('home-page').classList.contains('active-page')) {
+            window.syraMap.invalidateSize();
+        }
+    });
+    if(document.getElementById('home-page').classList.contains('active-page')) setTimeout(initMap, 80);
+</script>
+</body>
+</html>

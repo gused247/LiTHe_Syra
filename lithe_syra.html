@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>LiTHe Syra — Orange Run Club</title>
+
+  <!-- Fonts / Icons / Map -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Anton&family=Inter:opsz,wght@14..32,400;14..32,600;14..32,700;14..32,800;14..32,900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+  <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+
+  <style>
+    :root {
+      --bg: #050505;
+      --ink: #f7f2ec;
+      --muted: #b8aca2;
+      --line: rgba(255, 255, 255, 0.12);
+      --line-orange: rgba(255, 94, 46, 0.42);
+      --orange: #ff5e2e;
+      --orange-2: #ff9d5c;
+      --orange-3: #c43b0a;
+      --panel: rgba(13, 13, 13, 0.76);
+      --panel-strong: rgba(5, 5, 5, 0.88);
+      --radius-xl: 34px;
+      --radius-lg: 24px;
+      --shadow: 0 22px 70px rgba(0, 0, 0, 0.55);
+      --container: 1220px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html {
+      scroll-behavior: smooth;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      color: var(--ink);
+      background:
+        radial-gradient(circle at 12% 16%, rgba(255, 94, 46, 0.23), transparent 34rem),
+        radial-gradient(circle at 88% 5%, rgba(255, 154, 92, 0.11), transparent 32rem),
+        linear-gradient(135deg, #050505 0%, #101010 44%, #050505 100%);
+      line-height: 1.55;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      opacity: 0.13;
+      z-index: -1;
+      background-image:
+        linear-gradient(rgba(255,255,255,.06) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size: 46px 46px;
+      mask-image: radial-gradient(circle at center, black 0%, transparent 72%);
+    }
+
+    body::after {
+      content: "";
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0.07;
+      background-image:
+        repeating-radial-gradient(circle at 20% 30%, rgba(255,255,255,.9) 0 1px, transparent 1px 3px);
+      mix-blend-mode: screen;
+    }
+
+    a {
+      color: inherit;
+    }
+
+    .container {
+      width: min(var(--container), calc(100% - 32px));
+      margin: 0 auto;
+    }
+
+    /* NAV */
+    .navbar {
+      position: sticky;
+      top: 14px;
+      z-index: 50;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 18px;
+      margin: 14px auto 34px;
+      padding: 12px;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      background: rgba(7, 7, 7, 0.74);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      padding: 7px 22px 7px 10px;
+      border: 1px solid var(--line-orange);
+      border-radius: 999px;
+      background: linear-gradient(135deg, rgba(255, 94, 46, 0.16), rgba(255, 255, 255, 0.035));
+      text-decoration: none;
+      min-width: max-content;
+    }
+
+    .logo-img {
+      height: clamp(72px, 7.2vw, 104px);
+      width: auto;
+      display: block;
+      object-fit: contain;
+      filter:
+        drop-shadow(0 0 10px rgba(255, 94, 46, 0.55))
+        drop-shadow(0 10px 18px rgba(0, 0, 0, 0.6));
+    }
+
+    .brand-mark {
+      display: grid;
+      gap: 0;
+      line-height: 0.95;
+    }
+
+    .brand-text {
+      font-family: Anton, Inter, sans-serif;
+      font-size: clamp(1.45rem, 2.2vw, 2rem);
+      letter-spacing: 0.035em;
+      text-transform: uppercase;
+    }
+
+    .brand-sub {
+      color: var(--orange-2);
+      font-size: 0.72rem;
+      font-weight: 900;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .nav-links {
+      display: flex;
+      align-items: center;
+      justify-content: flex-end;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .nav-btn {
+      appearance: none;
+      border: 1px solid transparent;
+      border-radius: 999px;
+      background: transparent;
+      color: var(--muted);
+      cursor: pointer;
+      font: inherit;
+      font-size: 0.82rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+      padding: 13px 16px;
+      text-transform: uppercase;
+      transition: transform 180ms ease, background 180ms ease, border-color 180ms ease, color 180ms ease;
+      white-space: nowrap;
+    }
+
+    .nav-btn i {
+      margin-right: 7px;
+      color: var(--orange-2);
+    }
+
+    .nav-btn.active,
+    .nav-btn:hover {
+      transform: translateY(-1px);
+      border-color: rgba(255, 94, 46, 0.55);
+      background: var(--orange);
+      color: #060606;
+      box-shadow: 0 12px 28px rgba(255, 94, 46, 0.25);
+    }
+
+    .nav-btn.active i,
+    .nav-btn:hover i {
+      color: #060606;
+    }
+
+    /* PAGE */
+    .page {
+      display: none;
+      animation: fadeUp 360ms ease both;
+    }
+
+    .active-page {
+      display: block;
+    }
+
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(12px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .hero {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1.02fr) minmax(330px, 0.88fr);
+      gap: 24px;
+      align-items: stretch;
+      min-height: 620px;
+    }
+
+    .hero-copy,
+    .hero-visual,
+    .section-card,
+    .glass-panel,
+    .live-workout-window {
+      border: 1px solid var(--line);
+      background: var(--panel);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(18px);
+    }
+
+    .hero-copy {
+      position: relative;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      padding: clamp(28px, 5vw, 64px);
+      border-radius: var(--radius-xl);
+    }
+
+    .hero-copy::before {
+      content: "";
+      position: absolute;
+      inset: -1px;
+      pointer-events: none;
+      background:
+        linear-gradient(90deg, rgba(255, 94, 46, 0.62), transparent 33%),
+        radial-gradient(circle at 82% 12%, rgba(255, 94, 46, 0.2), transparent 30rem);
+      opacity: 0.42;
+      mask-image: linear-gradient(90deg, black, transparent 74%);
+    }
+
+    .eyebrow {
+      position: relative;
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      width: fit-content;
+      margin-bottom: 22px;
+      padding: 9px 14px;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.055);
+      color: var(--orange-2);
+      font-size: 0.78rem;
+      font-weight: 900;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+    }
+
+    .eyebrow::before {
+      content: "";
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      background: var(--orange);
+      box-shadow: 0 0 0 7px rgba(255, 94, 46, 0.18);
+      animation: pulse 1.55s infinite;
+    }
+
+    .sick-title {
+      position: relative;
+      max-width: 11ch;
+      font-family: Anton, Inter, sans-serif;
+      font-size: clamp(4rem, 10vw, 9.25rem);
+      font-weight: 400;
+      letter-spacing: -0.035em;
+      line-height: 0.86;
+      text-transform: uppercase;
+    }
+
+    .sick-title .orange {
+      color: var(--orange);
+      text-shadow: 0 0 30px rgba(255, 94, 46, 0.28);
+    }
+
+    .hero-lead {
+      position: relative;
+      max-width: 60ch;
+      margin: 24px 0;
+      color: #e7ded7;
+      font-size: clamp(1rem, 1.6vw, 1.27rem);
+    }
+
+    .hero-actions {
+      position: relative;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-top: 8px;
+    }
+
+    .btn-primary,
+    .btn-outline {
+      appearance: none;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      min-height: 48px;
+      border-radius: 999px;
+      cursor: pointer;
+      font: inherit;
+      font-weight: 950;
+      letter-spacing: 0.03em;
+      text-decoration: none;
+      text-transform: uppercase;
+      transition: transform 180ms ease, box-shadow 180ms ease, background 180ms ease, border-color 180ms ease;
+    }
+
+    .btn-primary {
+      border: 0;
+      padding: 14px 22px;
+      background: var(--orange);
+      color: #050505;
+      box-shadow: 0 16px 40px rgba(255, 94, 46, 0.28);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      background: var(--orange-2);
+      box-shadow: 0 22px 50px rgba(255, 94, 46, 0.38);
+    }
+
+    .btn-outline {
+      border: 1px solid rgba(255, 255, 255, 0.18);
+      padding: 13px 20px;
+      background: rgba(255, 255, 255, 0.04);
+      color: var(--ink);
+    }
+
+    .btn-outline:hover {
+      transform: translateY(-2px);
+      border-color: rgba(255, 94, 46, 0.72);
+      background: rgba(255, 94, 46, 0.12);
+    }
+
+    .hero-stats {
+      position: relative;
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 12px;
+      margin-top: 34px;
+    }
+
+    .stat {
+      padding: 17px;
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 20px;
+      background: rgba(255, 255, 255, 0.045);
+    }
+
+    .stat strong {
+      display: block;
+      color: white;
+      font-family: Anton, Inter, sans-serif;
+      font-size: 1.85rem;
+      font-weight: 400;
+      line-height: 1;
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: 0.78rem;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      text-transform: uppercase;
+    }
+
+    .hero-visual {
+      position: relative;
+      overflow: hidden;
+      min-height: 520px;
+      border-radius: var(--radius-xl);
+      background:
+        linear-gradient(180deg, rgba(255, 94, 46, 0.16), transparent),
+        #0d0d0d;
+    }
+
+    .photo-frame {
+      position: absolute;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.13);
+      border-radius: 28px;
+      background:
+        linear-gradient(135deg, rgba(255,94,46,.18), rgba(255,255,255,.06)),
+        #111;
+    }
+
+    .photo-frame img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: cover;
+      filter: grayscale(0.62) contrast(1.12) brightness(0.9);
+      transform: scale(1.02);
+    }
+
+    .photo-frame::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+      pointer-events: none;
+      background:
+        linear-gradient(180deg, transparent 44%, rgba(0,0,0,.84)),
+        linear-gradient(90deg, rgba(255,94,46,.26), transparent 52%);
+    }
+
+    .photo-a {
+      inset: 22px 22px 39% 22px;
+    }
+
+    .photo-b {
+      left: 22px;
+      right: 22px;
+      bottom: 22px;
+      top: 57%;
+    }
+
+    .photo-frame.img-missing {
+      display: grid;
+      place-items: center;
+    }
+
+    .photo-frame.img-missing::after {
+      content: attr(data-missing);
+      position: relative;
+      z-index: 2;
+      max-width: 24ch;
+      color: rgba(255,255,255,.78);
+      font-weight: 900;
+      letter-spacing: .04em;
+      text-align: center;
+      text-transform: uppercase;
+    }
+
+    .visual-card {
+      position: absolute;
+      right: 0px;
+      bottom: 0px;
+      z-index: 3;
+      max-width: 560px;
+      padding: 15px;
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 22px;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(14px);
+    }
+
+    .visual-card strong {
+      display: block;
+      margin-bottom: 6px;
+      color: var(--orange-2);
+      font-size: 0.82rem;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .visual-card p {
+      color: #fff;
+      font-weight: 400;
+    }
+
+    .ticker {
+      display: flex;
+      gap: 14px;
+      overflow: hidden;
+      margin: 28px 0;
+      padding: 13px 0;
+      border-block: 1px solid rgba(255, 94, 46, 0.36);
+      color: var(--orange-2);
+      font-family: Anton, Inter, sans-serif;
+      font-size: clamp(1.4rem, 2.5vw, 2.35rem);
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+
+    .ticker span {
+      animation: slideTicker 22s linear infinite;
+    }
+
+    @keyframes slideTicker {
+      from { transform: translateX(0); }
+      to { transform: translateX(-100%); }
+    }
+
+    .section-card {
+      margin: 22px 0;
+      padding: clamp(22px, 4vw, 38px);
+      border-radius: var(--radius-xl);
+    }
+
+    .section-title {
+      margin-bottom: 10px;
+      font-family: Anton, Inter, sans-serif;
+      font-size: clamp(2rem, 4vw, 4rem);
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 0.95;
+      text-transform: uppercase;
+    }
+
+    .section-kicker {
+      margin-bottom: 24px;
+      color: var(--orange-2);
+      font-size: 0.8rem;
+      font-weight: 950;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+    }
+
+    .muted {
+      color: var(--muted);
+    }
+
+    .two-col-grid,
+    .feature-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 18px;
+    }
+
+    .feature-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      margin-top: 22px;
+    }
+
+    .glass-panel {
+      position: relative;
+      overflow: hidden;
+      padding: 24px;
+      border-radius: var(--radius-lg);
+      transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+    }
+
+    .glass-panel:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 94, 46, 0.65);
+      background: rgba(18, 18, 18, 0.86);
+    }
+
+    .glass-panel i {
+      margin-bottom: 16px;
+      color: var(--orange-2);
+      font-size: 1.9rem;
+    }
+
+    .glass-panel h3 {
+      margin-bottom: 8px;
+      color: white;
+      font-size: 1.14rem;
+      letter-spacing: -0.02em;
+    }
+
+    /* LIVE WINDOW */
+    .live-workout-window {
+      overflow: hidden;
+      margin: 22px 0;
+      border-radius: var(--radius-xl);
+    }
+
+    .live-workout-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      flex-wrap: wrap;
+      padding: 18px 22px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      background:
+        linear-gradient(90deg, rgba(255, 94, 46, 0.95), rgba(196, 59, 10, 0.86)),
+        #111;
+    }
+
+    .live-workout-header h3 {
+      color: white;
+      font-size: 1rem;
+      font-weight: 950;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    .live-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(0, 0, 0, 0.72);
+      color: #fff;
+      font-size: 0.74rem;
+      font-weight: 900;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .pulse-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #fff;
+      box-shadow: 0 0 0 6px rgba(255, 255, 255, 0.2);
+      animation: pulse 1.45s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(0.88); opacity: 0.7; }
+      50% { transform: scale(1.08); opacity: 1; }
+    }
+
+    .iframe-container {
+      width: 100%;
+      height: min(62vh, 560px);
+      min-height: 380px;
+      background: #090909;
+    }
+
+    .iframe-container iframe {
+      width: 100%;
+      height: 100%;
+      display: block;
+      border: 0;
+      background: #fff;
+    }
+
+    .iframe-fallback,
+    .map-caption {
+      padding: 14px 18px;
+      color: var(--muted);
+      font-size: 0.9rem;
+      text-align: center;
+    }
+
+    .iframe-fallback {
+      border-top: 1px solid rgba(255, 255, 255, 0.08);
+      background: rgba(255, 94, 46, 0.08);
+    }
+
+    .iframe-fallback a {
+      color: white;
+      font-weight: 950;
+      text-decoration-color: var(--orange);
+      text-underline-offset: 3px;
+    }
+
+    #sick-map {
+      width: 100%;
+      height: 410px;
+      margin-top: 18px;
+      border: 1px solid rgba(255, 94, 46, 0.45);
+      border-radius: 26px;
+      box-shadow: 0 18px 45px rgba(0,0,0,.38);
+      z-index: 1;
+    }
+
+    form {
+      display: grid;
+      gap: 16px;
+      margin-top: 18px;
+    }
+
+    .form-group {
+      display: grid;
+      gap: 8px;
+    }
+
+    label {
+      color: #fff;
+      font-size: 0.86rem;
+      font-weight: 900;
+      letter-spacing: 0.04em;
+    }
+
+    input,
+    select,
+    textarea {
+      width: 100%;
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      border-radius: 18px;
+      background: rgba(255, 255, 255, 0.055);
+      color: #fff;
+      font: inherit;
+      font-size: 1rem;
+      outline: none;
+      padding: 15px 16px;
+      transition: border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+
+    select {
+      color-scheme: dark;
+    }
+
+    input:focus,
+    select:focus,
+    textarea:focus {
+      border-color: rgba(255, 94, 46, 0.85);
+      background: rgba(255, 255, 255, 0.08);
+      box-shadow: 0 0 0 4px rgba(255, 94, 46, 0.18);
+    }
+
+    .inline-check {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      color: var(--muted);
+      line-height: 1.35;
+    }
+
+    .inline-check input {
+      width: auto;
+      margin-top: 3px;
+      accent-color: var(--orange);
+    }
+
+    .feedback {
+      color: var(--orange-2);
+      font-weight: 800;
+    }
+
+    footer {
+      margin: 38px 0 28px;
+      padding: 22px;
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 28px;
+      background: rgba(255, 255, 255, 0.035);
+      color: var(--muted);
+      font-size: 0.88rem;
+      text-align: center;
+    }
+
+    @media (max-width: 980px) {
+      .navbar {
+        align-items: stretch;
+        border-radius: 30px;
+        flex-direction: column;
+      }
+
+      .logo-area {
+        justify-content: center;
+      }
+
+      .nav-links {
+        justify-content: center;
+      }
+
+      .hero {
+        grid-template-columns: 1fr;
+        min-height: auto;
+      }
+
+      .hero-visual {
+        min-height: 540px;
+      }
+
+      .feature-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 680px) {
+      .container {
+        width: min(100% - 20px, var(--container));
+      }
+
+      .navbar {
+        top: 8px;
+        margin-top: 8px;
+        padding: 9px;
+      }
+
+      .logo-area {
+        width: 100%;
+        padding: 8px 14px 8px 8px;
+      }
+
+      .logo-img {
+        height: 64px;
+      }
+
+      .brand-text {
+        font-size: 1.35rem;
+      }
+
+      .nav-links {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        width: 100%;
+      }
+
+      .nav-btn {
+        width: 100%;
+        padding: 12px 10px;
+        font-size: 0.74rem;
+      }
+
+      .hero-copy {
+        padding: 26px;
+      }
+
+      .sick-title {
+        font-size: clamp(3.15rem, 18vw, 5.2rem);
+      }
+
+      .hero-stats,
+      .two-col-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .hero-visual {
+        min-height: 480px;
+      }
+
+      .photo-a {
+        inset: 14px 14px 47% 14px;
+      }
+
+      .photo-b {
+        left: 14px;
+        right: 14px;
+        top: 55%;
+        bottom: 14px;
+      }
+
+      .visual-card {
+        left: 24px;
+        right: 24px;
+        bottom: 24px;
+        max-width: none;
+      }
+
+      .iframe-container {
+        height: 420px;
+      }
+
+      #sick-map {
+        height: 340px;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <header class="navbar" aria-label="Main navigation">
+      <a class="logo-area" href="#" data-page-link="home" aria-label="Go to LiTHe Syra home">
+        <img src="./logga-uppskalad-2.png" alt="LiTHe Syra logo" class="logo-img" onerror="this.src='https://placehold.co/130x130/050505/ff5e2e?text=SYRA'" />
+        <span class="brand-mark">
+          <span class="brand-text">LiTHe Syra</span>
+          <span class="brand-sub">Student RunClub</span>
+        </span>
+      </a>
+
+      <nav class="nav-links" aria-label="Pages">
+        <button class="nav-btn active" data-page="home"><i class="fa-solid fa-house"></i> Home</button>
+        <button class="nav-btn" data-page="login"><i class="fa-solid fa-key"></i> Login</button>
+        <button class="nav-btn" data-page="member"><i class="fa-solid fa-person-running"></i> Become member</button>
+        <button class="nav-btn" data-page="workout"><i class="fa-solid fa-calendar-check"></i> Register workout</button>
+      </nav>
+    </header>
+
+    <main>
+      <section id="home-page" class="page active-page">
+        <div class="hero">
+          <div class="hero-copy">
+            <div>
+              <div class="eyebrow"> Welcome · To · Lithe Syra · student runclub </div>
+              <h1 class="sick-title">Run the <span class="orange">campus</span>. Own the pace.</h1>
+              <p class="hero-lead">
+                Studentlöparsällskapet, LiTHe Syra. <br>
+                För oss som tycker om att träna löpning tillsammans.
+                No gatekeeping. Just threshold, and community. <br> <br>
+
+                Vi har samarbeten med LiTHe Vilse och LiU Elitidrott och i vår gemensamma träningskalender hittar du alla våra träningar, 
+                där du även kan anmäla dig till dem. LiTHe Syras träningar är orangea, LiTHe Vilses är lila och LiU Elitidrott är blå.
+              </p>
+              <div class="hero-actions">
+                <button class="btn-primary" data-page-jump="member"><i class="fa-solid fa-bolt"></i> Join the movement</button>
+                <button class="btn-outline" data-page-jump="workout"><i class="fa-solid fa-stopwatch"></i> See workouts</button>
+              </div>
+            </div>
+
+            <div class="hero-stats" aria-label="Club highlights">
+              <div class="stat"><strong>30+</strong><span>runners</span></div>
+              <div class="stat"><strong>3</strong><span>weekly sessions</span></div>
+              <div class="stat"><strong>0</strong><span>gatekeeping <br> (No cap fr)</span></div>
+            </div>
+          </div>
+
+          <aside class="hero-visual" aria-label="Run club imagery">
+            <!-- Replace these two filenames with your high-resolution images. Keep them in the same folder as this HTML file. -->
+            <figure class="photo-frame photo-a" data-missing="Add ./nyc-run-01.jpg">
+              <img src="./27_mast_longrun.jpeg" alt="Runners moving through the city at night" onerror="this.parentElement.classList.add('img-missing'); this.remove();" />
+            </figure>
+            <figure class="photo-frame photo-b" data-missing="Add ./nyc-run-02.jpg">
+              <img src="./outlaws_and_daydreamers.png" alt="Orange-lit running club group session" onerror="this.parentElement.classList.add('img-missing'); this.remove();" />
+            </figure>
+            <div class="visual-card">
+              <strong>The Lore</strong>
+              <p>
+                Föreningen bildades 2007 och riktar sig till alla som tycker om att träna ihop oavsett ambitionsnivå. 
+                Vi erbjuder träning både inomhus i Campushallen och utomhus flera gånger i veckan i princip hela läsåret.
+              </p>
+            </div>
+          </aside>
+        </div>
+
+        <div class="ticker" aria-hidden="true">
+          <span>Threshold · Long run · Hill Sessions · RockGympa · Community · </span>
+          <span>Threshold · Long run · Hill Sessions · RockGympa · Community · </span>
+          <span>Threshold · Long run · Fartlek · Fidde · Community · </span>
+        </div>
+
+        <section class="live-workout-window">
+          <div class="live-workout-header">
+            <h3><i class="fa-solid fa-calendar-week"></i> This week's workouts — live</h3>
+            <div class="live-badge"><span class="pulse-dot"></span> From Elitidrott</div>
+          </div>
+          <div class="iframe-container">
+            <iframe src="https://www.elitidrott.on.liu.se/app/#/" title="LiTHe Syra Weekly Workouts" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation allow-modals" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+          </div>
+          <div class="iframe-fallback">
+            If the live window does not load, <a href="https://www.elitidrott.on.liu.se/app/#/" target="_blank" rel="noreferrer">open the schedule here</a>.
+          </div>
+        </section>
+
+        <section class="section-card">
+          <div class="section-kicker">Meeting point</div>
+          <h2 class="section-title">Vallamassivet / behind Studenthuset</h2>
+          <p class="muted">Grass field next to the sports hall. Look for orange details, questionable interval confidence and very real high fives.</p>
+          <div id="sick-map"></div>
+          <div class="map-caption"><i class="fa-solid fa-flag-checkered"></i> All speeds welcome. First-timers especially welcome.</div>
+        </section>
+
+        <section class="feature-grid">
+          <article class="glass-panel">
+            <i class="fa-solid fa-fire-flame-curved"></i>
+            <h3>Hard runs, soft culture</h3>
+            <p class="muted">We can hunt thresholds without turning the club into a performance cult. Run your pace. Stay with the crew.</p>
+          </article>
+          <article class="glass-panel">
+            <i class="fa-solid fa-route"></i>
+            <h3>Built for real sessions</h3>
+            <p class="muted">Live workout window, clear meeting point, fast registration and fewer visual distractions.</p>
+          </article>
+          <article class="glass-panel">
+            <i class="fa-solid fa-universal-access"></i>
+            <h3>Responsive by design</h3>
+            <p class="muted">The layout collapses cleanly on mobile, the navbar becomes a compact grid, and the logo stays visible.</p>
+          </article>
+        </section>
+      </section>
+
+      <section id="login-page" class="page">
+        <div class="section-card" style="max-width: 620px; margin-inline: auto;">
+          <div class="section-kicker">Crew access</div>
+          <h2 class="section-title">Login</h2>
+          <p class="muted">Demo login — any email works. No real gatekeeping here.</p>
+          <form id="login-form">
+            <div class="form-group">
+              <label for="login-email">Email / nickname</label>
+              <input type="email" id="login-email" placeholder="your@liu.se" required />
+            </div>
+            <div class="form-group">
+              <label for="login-password">Password</label>
+              <input type="password" id="login-password" placeholder="••••••••" required />
+            </div>
+            <button type="submit" class="btn-primary"><i class="fa-solid fa-arrow-right"></i> Unlock</button>
+            <p id="login-feedback" class="feedback"></p>
+          </form>
+        </div>
+      </section>
+
+      <section id="member-page" class="page">
+        <div class="section-card">
+          <div class="section-kicker">Become member</div>
+          <h2 class="section-title">Join the orange movement</h2>
+          <p class="muted">Membership is free and open. Get updates on sessions, social runs, fika and the kind of intervals you regret but secretly love.</p>
+
+          <form id="member-form">
+            <div class="two-col-grid">
+              <div class="form-group">
+                <label for="member-name">Full name *</label>
+                <input type="text" id="member-name" placeholder="Alex Syra" required />
+              </div>
+              <div class="form-group">
+                <label for="member-email">Email *</label>
+                <input type="email" id="member-email" placeholder="run@liu.se" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="member-program">Program / affiliation</label>
+              <input type="text" id="member-program" placeholder="e.g. Teknisk fysik, Datateknik, staff, runner" />
+            </div>
+
+            <div class="form-group">
+              <label for="member-pace">Pace comfort zone</label>
+              <select id="member-pace">
+                <option>Chill conversational pace — 6:30+/km</option>
+                <option>Steady tempo — 5:00–6:00/km</option>
+                <option>Threshold hunter — 4:00–5:00/km</option>
+                <option>All of the above — adaptable</option>
+              </select>
+            </div>
+
+            <label class="inline-check">
+              <input type="checkbox" id="member-inclusive" checked />
+              <span>I stand with inclusivity: no gatekeeping, full respect, run happy.</span>
+            </label>
+
+            <button type="submit" class="btn-primary"><i class="fa-solid fa-person-running"></i> Become a member</button>
+            <p id="member-feedback" class="feedback"></p>
+          </form>
+        </div>
+      </section>
+
+      <section id="workout-page" class="page">
+        <div class="section-card">
+          <div class="section-kicker">Register workout</div>
+          <h2 class="section-title">Pick your session</h2>
+          <p class="muted">All levels invited. Book via the live window or use the form for the hype list.</p>
+
+          <section class="live-workout-window">
+            <div class="live-workout-header">
+              <h3><i class="fa-solid fa-eye"></i> Live preview</h3>
+              <a href="https://www.elitidrott.on.liu.se/app/#/" target="_blank" rel="noreferrer" class="btn-outline" style="min-height: 38px; padding: 8px 13px;">Open full schedule</a>
+            </div>
+            <div class="iframe-container" style="height: 330px; min-height: 330px;">
+              <iframe src="https://www.elitidrott.on.liu.se/app/#/" title="Weekly workouts preview" sandbox="allow-same-origin allow-scripts allow-popups allow-forms allow-top-navigation" referrerpolicy="strict-origin-when-cross-origin"></iframe>
+            </div>
+          </section>
+
+          <form id="workout-reg-form">
+            <div class="two-col-grid">
+              <div class="form-group">
+                <label for="workout-name">Your name *</label>
+                <input type="text" id="workout-name" placeholder="Emilia K." required />
+              </div>
+              <div class="form-group">
+                <label for="workout-email">Email *</label>
+                <input type="email" id="workout-email" placeholder="fastpacer@liu.se" required />
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="workout-session">Choose your session</label>
+              <select id="workout-session">
+                <option value="Monday Threshold Intervals">Monday 17:30 — Threshold Intervals @ Vallamassivet</option>
+                <option value="Wednesday Easy Long Run">Wednesday 18:00 — Easy Long Run</option>
+                <option value="Friday Fartlek & Fika">Friday 16:00 — Fartlek & Fika</option>
+                <option value="Saturday Pace Party">Saturday 10:00 — Pace Party</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label for="workout-note">Extra note / pace buddy request</label>
+              <textarea rows="3" id="workout-note" placeholder="I want a 5k under 30 group, or just good energy."></textarea>
+            </div>
+
+            <button type="submit" class="btn-primary"><i class="fa-solid fa-calendar-check"></i> Register</button>
+            <p id="workout-feedback" class="feedback"></p>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <footer>
+      <img src="./logga-uppskalad-2.png" alt="LiTHe Syra logo" class="logo-img" onerror="this.src='https://placehold.co/130x130/050505/ff5e2e?text=SYRA'"/>
+      Copytight (C) LiTHe Syra 2007 - 2026
+    </footer>
+  </div>
+
+  <script>
+    // ---------- PAGE SWITCHING ----------
+    const pages = {
+      home: document.getElementById('home-page'),
+      login: document.getElementById('login-page'),
+      member: document.getElementById('member-page'),
+      workout: document.getElementById('workout-page')
+    };
+
+    const navBtns = document.querySelectorAll('.nav-btn');
+
+    function switchPage(pageId) {
+      if (!pages[pageId]) return;
+
+      Object.values(pages).forEach(page => page.classList.remove('active-page'));
+      pages[pageId].classList.add('active-page');
+
+      navBtns.forEach(btn => {
+        btn.classList.toggle('active', btn.getAttribute('data-page') === pageId);
+      });
+
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+
+      if (pageId === 'home') {
+        setTimeout(() => {
+          initMap();
+          if (window.syraMap) window.syraMap.invalidateSize();
+        }, 150);
+      }
+    }
+
+    navBtns.forEach(btn => {
+      btn.addEventListener('click', () => switchPage(btn.getAttribute('data-page')));
+    });
+
+    document.querySelectorAll('[data-page-jump], [data-page-link]').forEach(el => {
+      el.addEventListener('click', (event) => {
+        event.preventDefault();
+        switchPage(el.getAttribute('data-page-jump') || el.getAttribute('data-page-link'));
+      });
+    });
+
+    // ---------- MAP ----------
+    window.mapInitialized = false;
+    window.syraMap = null;
+
+    function initMap() {
+      const mapContainer = document.getElementById('sick-map');
+      if (!mapContainer || typeof L === 'undefined') return;
+
+      if (window.mapInitialized && window.syraMap) {
+        window.syraMap.invalidateSize();
+        return;
+      }
+
+      const meetingPoint = [58.3990, 15.5772];
+
+      window.syraMap = L.map('sick-map', {
+        scrollWheelZoom: false
+      }).setView(meetingPoint, 16);
+
+      L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+        attribution: '&copy; OpenStreetMap & CartoDB',
+        subdomains: 'abcd',
+        maxZoom: 19,
+        minZoom: 13
+      }).addTo(window.syraMap);
+
+      const orangeIcon = L.divIcon({
+        html: '<div style="background:#ff5e2e;width:34px;height:34px;border-radius:50%;display:flex;align-items:center;justify-content:center;border:3px solid white;box-shadow:0 0 0 6px rgba(255,94,46,.26),0 10px 25px rgba(0,0,0,.45);"><i class="fa-solid fa-flag-checkered" style="color:#050505;font-size:14px;"></i></div>',
+        iconSize: [34, 34],
+        className: 'custom-run-orange'
+      });
+
+      L.marker(meetingPoint, { icon: orangeIcon }).addTo(window.syraMap)
+        .bindPopup('<b>LiTHe Syra start</b><br>Behind Studenthuset, Vallamassivet.')
+        .openPopup();
+
+      L.marker([58.3997, 15.5760], {
+        icon: L.divIcon({ html: '📍', iconSize: [22, 22], className: '' })
+      }).addTo(window.syraMap).bindPopup('Studenthuset area');
+
+      window.mapInitialized = true;
+    }
+
+    // ---------- LOGIN ----------
+    const loginForm = document.getElementById('login-form');
+
+    if (loginForm) {
+      loginForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const email = document.getElementById('login-email').value.trim();
+        const feedback = document.getElementById('login-feedback');
+
+        if (!email) {
+          feedback.textContent = "Type anything — still no gatekeeping.";
+          return;
+        }
+
+        feedback.textContent = `Welcome back, ${email}. Orange miles loaded.`;
+        loginForm.reset();
+      });
+    }
+
+    // ---------- BECOME MEMBER ----------
+    const memberForm = document.getElementById('member-form');
+
+    if (memberForm) {
+      memberForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const name = document.getElementById('member-name').value.trim();
+        const email = document.getElementById('member-email').value.trim();
+        const pace = document.getElementById('member-pace').value;
+        const inclusiveOk = document.getElementById('member-inclusive').checked;
+        const feedback = document.getElementById('member-feedback');
+
+        if (!name || !email) {
+          feedback.textContent = "Name and email needed so we can welcome you properly.";
+          return;
+        }
+
+        if (!inclusiveOk) {
+          feedback.textContent = "Respect and no gatekeeping is the one non-negotiable rule.";
+          return;
+        }
+
+        feedback.textContent = `Orange confirmed, ${name}. Updates go to ${email}. Pace: ${pace}.`;
+        memberForm.reset();
+        document.getElementById('member-inclusive').checked = true;
+      });
+    }
+
+    // ---------- WORKOUT REGISTRATION ----------
+    const workoutForm = document.getElementById('workout-reg-form');
+
+    if (workoutForm) {
+      workoutForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+
+        const name = document.getElementById('workout-name').value.trim();
+        const email = document.getElementById('workout-email').value.trim();
+        const sessionSelect = document.getElementById('workout-session');
+        const sessionText = sessionSelect.options[sessionSelect.selectedIndex].text;
+        const note = document.getElementById('workout-note').value.trim();
+        const feedback = document.getElementById('workout-feedback');
+
+        if (!name || !email) {
+          feedback.textContent = "Enter name and email, legend.";
+          return;
+        }
+
+        feedback.innerHTML = `Registered: <strong>${name}</strong> for ${sessionText}. Confirmation vibes to ${email}.${note ? ` Note: "${note}"` : ""}`;
+        workoutForm.reset();
+      });
+    }
+
+    window.addEventListener('load', () => {
+      if (document.getElementById('home-page').classList.contains('active-page')) {
+        initMap();
+        setTimeout(() => {
+          if (window.syraMap) window.syraMap.invalidateSize();
+        }, 400);
+      }
+    });
+
+    window.addEventListener('resize', () => {
+      if (window.syraMap && window.mapInitialized && document.getElementById('home-page').classList.contains('active-page')) {
+        window.syraMap.invalidateSize();
+      }
+    });
+  </script>
+</body>
+</html>
